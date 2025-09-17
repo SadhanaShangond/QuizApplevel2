@@ -1,11 +1,11 @@
 const express = require("express");
 const cors= require("cors");
-const db = require("./utils/db.js");
-const userRouter = require("./routes/userRoutes.js");
+const db = require("./src/utils/db.js");
+const userRouter = require("./src/routes/userRoutes.js");
 
 const cookieParser = require("cookie-parser");
-const questionRouter = require("./routes/questionRoutes.js");
-const { quizRouter } = require("./routes/quizRoutes.js");
+const questionRouter = require("./src/routes/questionRoutes.js");
+const { quizRouter } = require("./src/routes/quizRoutes.js");
 const app = express();
 const PORT = process.env.PORT || 3001;
 
