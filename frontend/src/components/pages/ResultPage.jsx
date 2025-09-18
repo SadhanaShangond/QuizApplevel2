@@ -10,13 +10,10 @@ import useResultState from "../../hooks/useResultState";
 import { routes } from "../../App";
 import Footer from "./footer";
 
-
 const QuizResults = () => {
-
-
-const dispatch = useDispatch();
-const navigate = useNavigate();
-const [displayCorrectAnswers,setDisplayCorrectAnswers] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [displayCorrectAnswers, setDisplayCorrectAnswers] = useState(false);
 
   const {
     inCorrectAnswers,
@@ -30,32 +27,32 @@ const [displayCorrectAnswers,setDisplayCorrectAnswers] = useState(false);
     error,
   } = useResultState();
 
-  //if there are no incorrect answers bycorrect answers by default
-  useEffect(()=>{
-    if(status && !noOfInCorrectAnswers){
+  useEffect(() => {
+    if (status && !noOfInCorrectAnswers) {
       setDisplayCorrectAnswers(true);
     }
-  },[noOfInCorrectAnswers,status])
+  }, [noOfInCorrectAnswers, status]);
 
-  // 🔥 Fetch results + attempts when page loads
+  // Fetch results + attempts
   useEffect(() => {
     dispatch(fetchCompleteQuizApi());
     dispatch(fetchAttemptsAPI());
   }, [dispatch]);
 
-  const correctRate =
-   useMemo(()=>{
+  const correctRate = useMemo(() => {
     return totalQuestions > 0
       ? ((noOfCorrectAswers / totalQuestions) * 100).toFixed(0)
       : 0;
-   },[noOfCorrectAswers,totalQuestions]);
+  }, [noOfCorrectAswers, totalQuestions]);
 
-   const handleReset = useCallback(()=>{
-   navigate(routes.protectedRoutes.questions);
-   },[navigate]);
+  const handleReset = useCallback(() => {
+    navigate(routes.protectedRoutes.questions);
+  }, [navigate]);
 
-   const dispalyQuestions = useMemo(()=>(displayCorrectAnswers?correctAnswers : inCorrectAnswers),[displayCorrectAnswers,correctAnswers,inCorrectAnswers]);
-  
+  const dispalyQuestions = useMemo(
+    () => (displayCorrectAnswers ? correctAnswers : inCorrectAnswers),
+    [displayCorrectAnswers, correctAnswers, inCorrectAnswers]
+  );
 
   if (loading) {
     return (
@@ -78,168 +75,172 @@ const [displayCorrectAnswers,setDisplayCorrectAnswers] = useState(false);
   return (
     <div
       data-theme="fantasy"
-      className="min-h-screen bg-base-200 flex flex-col items-center"
+      className="min-h-screen bg-base-200 flex flex-col"
     >
       {/* Navbar */}
-      <div className="navbar bg-base-100 shadow-md w-full px-6 py-4 flex justify-between items-center">
-        <h1 className="text-4xl font-extrabold mb-3 text-primary">
+      <div className="navbar bg-base-100 shadow-md w-full px-4 sm:px-6 py-3 flex justify-between items-center">
+        <h1 className="text-2xl sm:text-4xl font-extrabold text-primary">
           <span>Q</span>uiz
         </h1>
 
-        <div className="flex gap-4">
-          <button className="btn btn-primary" onClick={handleReset}>
-            <RotateCcw className="w-4 h-4 mr-2" />
+        <div className="flex gap-2 sm:gap-4">
+          <button
+            className="btn btn-sm sm:btn-md btn-primary flex items-center gap-2"
+            onClick={handleReset}
+          >
+            <RotateCcw className="w-4 h-4" />
             Restart
           </button>
-          <button className="btn btn-primary">
-            <LogOut className="w-4 h-4 mr-2" />
+          <button className="btn btn-sm sm:btn-md btn-primary flex items-center gap-2">
+            <LogOut className="w-4 h-4" />
             <Link to="/logout">Logout</Link>
           </button>
         </div>
       </div>
 
       {/* Divider */}
-      <div className="w-full border-t-4 border-white mb-8"></div>
-<div className="flex-1 flex flex-col items-center justify-start w-full">
-      {/* Score Summary + Answer Breakdown */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-4 w-full max-w-6xl mb-2" >
+      <div className="w-full border-t-4 border-white mb-6"></div>
 
-        {/* Score Summary */}
-        <div className="card bg-base-100 shadow-xl p-6 mb-2">
-          <h2 className="text-xl font-semibold mb-4">Score Summary</h2>
+      <div className="flex-1 flex flex-col items-center justify-start w-full px-3 sm:px-6">
+        {/* Score Summary + Answer Breakdown */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-6xl">
+          {/* Score Summary */}
+          <div className="card bg-base-100 shadow-xl p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4">
+              Score Summary
+            </h2>
 
-          {/* Circular Scorebar */}
-          {/* <div className="flex flex-col items-center mb-6">
-            <div
-              className="radial-progress text-primary w-64 h-64 text-5xl font-bold relative"
-              style={{ "--value": correctRate }}
-              role="progressbar"
-            >
-              {noOfCorrectAswers}
-              <p className="mt-4 text-lg text-gray-700 font-medium">
-                Your Score
-              </p>
-              <style>{`.radial-progress::after { display: none; }`}</style>
+            {/* Circular Scorebar */}
+            <div className="flex flex-col items-center mb-6">
+              <div className="relative w-40 h-40 sm:w-64 sm:h-64 flex items-center justify-center">
+                {/* Radial Progress */}
+                <div
+                  className="radial-progress text-primary w-40 h-40 sm:w-64 sm:h-64"
+                  style={{ "--value": correctRate }}
+                  role="progressbar"
+                ></div>
+
+                {/* Centered Content */}
+                <div className="absolute flex flex-col items-center justify-center">
+                  <span className="text-3xl sm:text-5xl font-bold text-primary">
+                    {noOfCorrectAswers}
+                  </span>
+                  <span className="mt-1 sm:mt-2 text-sm sm:text-lg text-gray-700 font-medium">
+                    Your Score
+                  </span>
+                </div>
+                <style>{`
+    .radial-progress::after {
+      display: none;
+    }
+  `}</style>
+              </div>
             </div>
-          </div> */}
-          <div className="flex flex-col items-center mb-6">
-            <div className="relative w-64 h-64 flex items-center justify-center">
-              {/* Radial Progress */}
-              <div
-                className="radial-progress text-primary w-64 h-64"
-                style={{ "--value": correctRate }}
-                role="progressbar"
-              ></div>
 
-              {/* Centered Content */}
-              <div className="absolute flex flex-col items-center justify-center">
-                <span className="text-5xl font-bold text-primary">
+            {/* Stat Grid */}
+            <div className="grid grid-cols-2 gap-4 text-center">
+              <div className="stat bg-base-200 rounded-lg p-3 sm:p-4">
+                <div className="stat-title text-sm sm:text-base font-medium">
+                  Attempts
+                </div>
+                <div className="stat-value text-primary text-xl sm:text-2xl">
+                  {attempts.attempts}
+                </div>
+              </div>
+
+              <div className="stat bg-base-200 rounded-lg p-3 sm:p-4">
+                <div className="stat-title text-sm sm:text-base font-medium">
+                  Completions
+                </div>
+                <div className="stat-value text-primary text-xl sm:text-2xl">
+                  100%
+                </div>
+              </div>
+
+              <div className="stat bg-base-200 rounded-lg p-3 sm:p-4">
+                <div className="stat-title text-sm sm:text-base font-medium">
+                  Total Questions
+                </div>
+                <div className="stat-value text-primary text-xl sm:text-2xl">
+                  {totalQuestions}
+                </div>
+              </div>
+
+              <div className="stat bg-base-200 rounded-lg p-3 sm:p-4">
+                <div className="stat-title text-success text-sm sm:text-base font-medium">
+                  Correct Answers
+                </div>
+                <div className="stat-value text-success text-xl sm:text-2xl">
                   {noOfCorrectAswers}
-                </span>
-                <span className="mt-2 text-lg text-gray-700 font-medium">
-                  Your Score
-                </span>
+                </div>
               </div>
 
-              <style>{`.radial-progress::after { display: none; }`}</style>
-
-            </div>
-          </div>
-
-          {/* Stat Grid */}
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div className="stat bg-base-200 rounded-lg p-4">
-              <div className="stat-title font-medium">Attempts</div>
-              <div className="stat-value text-primary text-2xl">
-                {attempts.attempts}
-              </div>
-            </div>
-
-            <div className="stat bg-base-200 rounded-lg p-4">
-              <div className="stat-title font-medium">Completions</div>
-              <div className="stat-value text-primary text-2xl">100%</div>
-            </div>
-
-            <div className="stat bg-base-200 rounded-lg p-4">
-              <div className="stat-title font-medium">Total Questions</div>
-              <div className="stat-value text-primary text-2xl">
-                {totalQuestions}
-              </div>
-            </div>
-
-            <div className="stat bg-base-200 rounded-lg p-4">
-              <div className="stat-title text-success font-medium">
-                Correct Answers
-              </div>
-              <div className="stat-value text-success text-2xl">
-                {noOfCorrectAswers}
-              </div>
-            </div>
-
-            <div className="stat bg-base-200 rounded-lg p-4">
-              <div className="stat-title text-error font-medium">
-                Wrong Answers
-              </div>
-              <div className="stat-value text-error text-2xl">
-                {noOfInCorrectAnswers}
+              <div className="stat bg-base-200 rounded-lg p-3 sm:p-4">
+                <div className="stat-title text-error text-sm sm:text-base font-medium">
+                  Wrong Answers
+                </div>
+                <div className="stat-value text-error text-xl sm:text-2xl">
+                  {noOfInCorrectAnswers}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Answer Breakdown */}
-        <div className="card bg-base-100 shadow-xl p-6 mb-2">
-          <h2 className="text-xl font-semibold mb-4">Your Answers</h2>
-          <ul className="space-y-4">
-            {dispalyQuestions?.length ? (
-              dispalyQuestions.map((item, index) => (
-                <li
-                  key={"result-" + item.question_id}
-                  className={`p-4 rounded border ${
-                    correctAnswers.includes(item)
-                      ? "border-success bg-success/10"
-                      : "border-error bg-error/10"
-                  }`}
-                >
-                  {/* Question */}
-                  <p className="font-medium">
-                    {index + 1}. {item.question}
-                  </p>
+          {/* Answer Breakdown */}
+          <div className="card bg-base-100 shadow-xl p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4">
+              Your Answers
+            </h2>
+            <ul className="space-y-3 sm:space-y-4">
+              {dispalyQuestions?.length ? (
+                dispalyQuestions.map((item, index) => (
+                  <li
+                    key={"result-" + item.question_id}
+                    className={`p-3 sm:p-4 rounded border ${
+                      correctAnswers.includes(item)
+                        ? "border-success bg-success/10"
+                        : "border-error bg-error/10"
+                    }`}
+                  >
+                    {/* Question */}
+                    <p className="font-medium text-sm sm:text-base">
+                      {index + 1}. {item.question}
+                    </p>
 
-                  {/* User Answer */}
-                  <p>
-                    Your Answer:{" "}
-                    <span
-                      className={`font-semibold ${
-                        correctAnswers.includes(item)
-                          ? "text-success"
-                          : "text-error"
-                      }`}
-                    >
-                      {item.submitted_answer.value}
-                    </span>
-                  </p>
-
-                  {/* Correct Answer (only if user was wrong) */}
-                  {inCorrectAnswers.includes(item) && (
-                    <p>
-                      Correct Answer:{" "}
-                      <span className="font-semibold text-success">
-                        {item.answer.value}
+                    {/* User Answer */}
+                    <p className="text-sm sm:text-base">
+                      Your Answer:{" "}
+                      <span
+                        className={`font-semibold ${
+                          correctAnswers.includes(item)
+                            ? "text-success"
+                            : "text-error"
+                        }`}
+                      >
+                        {item.submitted_answer.value}
                       </span>
                     </p>
-                  )}
-                </li>
-              ))
-            ) : (
-              <p> No Answers found.  </p>
-            )}
-          </ul>
-        </div>
 
+                    {/* Correct Answer (only if user was wrong) */}
+                    {inCorrectAnswers.includes(item) && (
+                      <p className="text-sm sm:text-base">
+                        Correct Answer:{" "}
+                        <span className="font-semibold text-success">
+                          {item.answer.value}
+                        </span>
+                      </p>
+                    )}
+                  </li>
+                ))
+              ) : (
+                <p>No Answers found.</p>
+              )}
+            </ul>
+          </div>
+        </div>
       </div>
-      </div>
-      <Footer/>
+
+      <Footer />
     </div>
   );
 };

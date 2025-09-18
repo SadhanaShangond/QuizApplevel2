@@ -10,12 +10,15 @@ import {
 } from "../../store/thunks/questionsThunks";
 import Option from "../../components/pages/Option";
 import { activeNextQuestion } from "../../store/Slices/QuestionSlice";
-import { fetchAttemptsAPI, fetchCompleteQuizApi } from "../../store/thunks/resultThunk";
+import {
+  fetchAttemptsAPI,
+  fetchCompleteQuizApi,
+} from "../../store/thunks/resultThunk";
 import Footer from "./footer";
 
 const QuestionPage = () => {
   const [userSelectedOption, setUserSelectedOption] = useState(null);
-  const [isAnswered, setIsAnswered] = useState(false); //prevents further selection after answering
+  const [isAnswered, setIsAnswered] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -35,13 +38,12 @@ const QuestionPage = () => {
     dispatch(fetchQuestionsAPI());
   }, [dispatch]);
 
-  // Reset selected option and answered status when question changes
+  // Reset option when question changes
   useEffect(() => {
     setUserSelectedOption(null);
     setIsAnswered(false);
   }, [activeQuestionId]);
 
-  // Handle option click
   const handleOptionClick = useCallback(
     async (selectedOption) => {
       if (isAnswered || isValidatingAnswer) return;
@@ -66,20 +68,17 @@ const QuestionPage = () => {
   const isFinalQuestion = activeQuestionNumber === totalQuestions;
 
   const moveForward = useCallback(() => {
-    console.log(isFinalQuestion);
     if (isFinalQuestion) {
-      // TODO: dispatch submit quiz API
       dispatch(submitQuizAPI());
-      setTimeout(()=>{
+      setTimeout(() => {
         dispatch(fetchCompleteQuizApi());
         dispatch(fetchAttemptsAPI());
-        navigate("/result");},500);
-      
-    
+        navigate("/result");
+      }, 500);
     } else {
       dispatch(activeNextQuestion());
     }
-  }, [dispatch, isFinalQuestion,navigate]);
+  }, [dispatch, isFinalQuestion, navigate]);
 
   if (loading || !activeQuestionId) {
     return (
@@ -102,95 +101,88 @@ const QuestionPage = () => {
   return (
     <div
       data-theme="fantasy"
-      className="min-h-screen bg-base-200 flex flex-col items-center"
+      className="min-h-screen bg-base-200 flex flex-col"
     >
       {/* Navbar */}
-      <div className="navbar bg-base-100 shadow-md w-full px-6 py-4 flex justify-between items-center">
-        <h1 className="text-4xl font-extrabold mb-3 text-primary">
+      <div className="navbar bg-base-100 shadow-md w-full px-4 sm:px-6 py-3 flex justify-between items-center">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-primary">
           <span>Q</span>uiz
         </h1>
-        <button className="btn btn-primary">
-          <LogOut className="w-4 h-4 mr-2" />
+        <button className="btn btn-sm sm:btn-md btn-primary flex items-center gap-2">
+          <LogOut className="w-4 h-4" />
           <Link to="/logout">Logout</Link>
         </button>
       </div>
 
-<div className="flex-1 flex flex-col items-center justify-start w-full">
-      {/* Progress Bar */}
-      <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
-        
-        <div
-          className="bg-primary h-2 rounded-full"
-          style={{ width: `${(activeQuestionNumber / totalQuestions) * 100}%` }}
-        />
-      </div>
+      {/* Content */}
+      <div className="flex-1 flex flex-col items-center justify-start w-full px-3 sm:px-6">
+        {/* Progress Bar */}
+        <div className="w-full bg-gray-200 rounded-full h-2 mb-4 sm:mb-6">
+          <div
+            className="bg-primary h-2 rounded-full"
+            style={{
+              width: `${(activeQuestionNumber / totalQuestions) * 100}%`,
+            }}
+          />
+        </div>
 
-      {/* Question Card */}
-      <div className="card w-[700px] bg-base-100 shadow-2xl rounded-2xl p-8">
-        <div className="flex justify-center mb-6">
-          <div className="rounded-full bg-primary text-white px-6 py-2 font-bold text-lg">
-            {activeQuestionNumber}/{totalQuestions}
+        {/* Question Card */}
+        <div className="card w-full max-w-lg sm:max-w-2xl bg-base-100 shadow-2xl rounded-2xl p-4 sm:p-8">
+          <div className="flex justify-center mb-4 sm:mb-6">
+            <div className="rounded-full bg-primary text-white px-4 py-1 sm:px-6 sm:py-2 font-bold text-sm sm:text-lg">
+              {activeQuestionNumber}/{totalQuestions}
+            </div>
+          </div>
+
+          <h2 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6 text-center">
+            {activeQuestion.question}
+          </h2>
+
+          {/* Options */}
+          <div className="flex flex-col gap-3 mb-4 sm:mb-6">
+            {activeQuestion.options.map((option) => {
+              const isThisSelected = userSelectedOption?.id === option.id;
+
+              const isCorrect =
+                activeQuestion.answer_status === "right" && isThisSelected;
+
+              const isWrong =
+                isThisSelected && activeQuestion.answer_status === "wrong";
+
+              return (
+                <Option
+                  key={option.id}
+                  option={option}
+                  isSelected={isThisSelected}
+                  isCorrect={isCorrect}
+                  isWrong={isWrong}
+                  isAnswered={isAnswered}
+                  isValidating={isValidatingAnswer && isThisSelected}
+                  onClick={handleOptionClick}
+                />
+              );
+            })}
+          </div>
+
+          {/* Next Button */}
+          <div className="flex justify-center">
+            <button
+              className={`btn w-full sm:w-auto ${
+                isFinalQuestion ? "btn-success" : "btn-primary"
+              } ${isSubmittingQuiz ? "loading" : ""}`}
+              onClick={moveForward}
+              disabled={!isAnswered || isSubmittingQuiz}
+            >
+              {isSubmittingQuiz
+                ? "Submitting..."
+                : isFinalQuestion
+                ? "Submit Quiz"
+                : "Next ➜"}
+            </button>
           </div>
         </div>
-
-        <h2 className="text-lg font-semibold mb-6 text-center">
-          {activeQuestion.question}
-        </h2>
-
-        {/* Options */}
-        <div className="flex flex-col gap-3 mb-6">
-          {activeQuestion.options.map((option) => {
-            const isThisSelected = userSelectedOption?.id === option.id;
-
-            // const isCorrect =
-            //   option.id === activeQuestion.selectedAnswer?.id &&
-            //   activeQuestion.answer_status === "right";
-            // const isWrong =
-            //   isThisSelected && activeQuestion.answer_status === "wrong";
-
-            // Green if this is the correct answer
-            const isCorrect =
-              activeQuestion.answer_status === "right" && isThisSelected;
-
-            // Red if user selected this option and it is wrong
-            const isWrong =
-              isThisSelected && activeQuestion.answer_status === "wrong";
-
-              
-            return (
-              <Option
-                key={option.id}
-                option={option}
-                isSelected={isThisSelected}
-                isCorrect={isCorrect}
-                isWrong={isWrong}
-                isAnswered={isAnswered}
-                isValidating={isValidatingAnswer && isThisSelected}
-                onClick={handleOptionClick}
-              />
-            );
-          })}
-        </div>
-
-        {/* Next Button */}
-        <div className="flex justify-center">
-          <button
-            className={`btn ${
-              isFinalQuestion ? "btn-success" : "btn-primary"
-            } ${isSubmittingQuiz ? "loading" : ""}`}
-            onClick={moveForward}
-            disabled={!isAnswered || isSubmittingQuiz}
-          >
-            {isSubmittingQuiz
-              ? "Submitting..."
-              : isFinalQuestion
-              ? "Submit Quiz"
-              : "Next ➜"}
-          </button>
-        </div>
       </div>
-   </div>
-      <Footer/>
+      <Footer />
     </div>
   );
 };
