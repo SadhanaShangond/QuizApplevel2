@@ -71,6 +71,7 @@ const QuizResults = () => {
       </div>
     );
   }
+  
 
   return (
     <div
